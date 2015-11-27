@@ -1,6 +1,8 @@
 from ConfigParser import ConfigParser
 
 import signal
+from collections import Counter
+
 import telegram
 import time
 
@@ -38,6 +40,12 @@ class Breakfast(object):
             kwargs['reply_markup'] = reply_markup
         return self.bot.sendSticker(**kwargs)
 
+    def send_photo(self, id_, reply_markup=None):
+        kwargs = dict(chat_id=self.chat_id, photo=id_)
+        if reply_markup:
+            kwargs['reply_markup'] = reply_markup
+        return self.bot.sendPhoto(**kwargs)
+
     def smack_these_etas(self):
         self.send_msg('ETAs')
         self.send_msg('john: 7:25')
@@ -55,17 +63,19 @@ class Breakfast(object):
     def normal_day(self):
         here = set()
         losers = set()
+        repliers = Counter()
         custom_keyboard = [HERE_MSGS[:2], HERE_MSGS[2:] + ['>=10'], LOSER_MSGS]
         reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
         last_upd = -1
 
         def send_summary(_signum, _frame):
-            self.handle_normal_day_replies(last_upd, here, losers)
+            self.handle_normal_day_replies(last_upd, here, losers, repliers)
             if len(here) == 0:
                 self.send_sticker('BQADAwADegADv4yQBIEb_nJ9h1mRAg', reply_markup=RELEASE_KEYBOARD)  # crying blond
                 self.send_msg('no one is coming!!! :-(')
             elif len(here) == 1:
-                self.send_msg('{}, may the force be with you'.format(list(here)[0]), reply_markup=RELEASE_KEYBOARD)
+                self.send_msg('{}, you\'re eating alone. May the force be with you'.format(list(here)[0]),
+                              reply_markup=RELEASE_KEYBOARD)
                 self.send_sticker('BQADAQADKwEAAtpxZgcxjbgZ2PsfdwI')  # luke skywalker - stand on one hand
             else:
                 self.send_msg('{} brogrammers gonna have fun'.format(len(here)), reply_markup=RELEASE_KEYBOARD)
@@ -82,7 +92,7 @@ class Breakfast(object):
         signal.signal(signal.SIGALRM, send_summary)
         signal.alarm(self.timeout)
         while not self.timed_out:
-            last_upd = self.handle_normal_day_replies(last_upd, here, losers)
+            last_upd = self.handle_normal_day_replies(last_upd, here, losers, repliers)
             time.sleep(5)
 
     def clean_srv_msgs(self):
@@ -90,14 +100,30 @@ class Breakfast(object):
         while updates:
             updates = self.bot.getUpdates(updates[-1].update_id + 1)
 
-    def handle_normal_day_replies(self, last_upd, here, losers):
+    def handle_normal_day_replies(self, last_upd, here, losers, repliers):
+        """
+        :type last_upd: int
+        :type here: set
+        :type losers: set
+        :type repliers: Counter
+        :rtype: int
+
+        """
         updates = self.bot.getUpdates(last_upd + 1)
         if updates:
             for i in updates:
+                fromu = i.message.from_user
+                name = self.get_name(fromu)
+                repliers[fromu.id] += 1
+                if repliers[fromu.id] > 1:
+                    if repliers[fromu.id] == 2:
+                        self.send_msg('{}, double votes are only allowed in the knesset!'.format(name))
+                        self.send_photo('AgADBAAD5qgxG1fLIwIDIV9LHsml3CwIcTAABHQ2QwuJWr9sheMBAAEC')  # oren hazan
+                    continue
                 if i.message.text in HERE_MSGS:
-                    here.add(self.get_name(i.message.from_user))
-                if i.message.text in LOSER_MSGS:
-                    losers.add(self.get_name(i.message.from_user))
+                    here.add(name)
+                elif i.message.text in LOSER_MSGS:
+                    losers.add(name)
             last_upd = updates[-1].update_id
         return last_upd
 
