@@ -1,10 +1,9 @@
-from ConfigParser import ConfigParser
-
 import signal
+import time
+from ConfigParser import ConfigParser
 from collections import Counter
 
 import telegram
-import time
 
 RELEASE_KEYBOARD = telegram.ReplyKeyboardHide()
 HERE_MSGS = ['here!', '7:25', '8:08']
