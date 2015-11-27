@@ -1,8 +1,12 @@
 from ConfigParser import ConfigParser
+
+import signal
 import telegram
 import time
 
 RELEASE_KEYBOARD = telegram.ReplyKeyboardHide()
+HERE_MSGS = ['here!', '7:25', '8:08']
+LOSER_MSGS = ["I'm a loser!"]
 
 
 class Breakfast(object):
@@ -13,6 +17,7 @@ class Breakfast(object):
     def __init__(self, conf_fname):
         self.load_conf(conf_fname)
         self.bot = telegram.Bot(token=self.token)
+        self.timed_out = 0
 
     def load_conf(self, fname):
         cfg = ConfigParser()
@@ -48,42 +53,53 @@ class Breakfast(object):
         pass
 
     def normal_day(self):
-        here_msgs = ['here!', '7:25', '8:08']
-        loser_msgs = ["I'm a loser!"]
         here = set()
         losers = set()
-        custom_keyboard = [here_msgs[:2], here_msgs[2:] + ['>=10'], loser_msgs]
+        custom_keyboard = [HERE_MSGS[:2], HERE_MSGS[2:] + ['>=10'], LOSER_MSGS]
         reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
+        last_upd = -1
+
+        def send_summary(_signum, _frame):
+            self.handle_normal_day_replies(last_upd, here, losers)
+            if len(here) == 0:
+                self.send_sticker('BQADAwADegADv4yQBIEb_nJ9h1mRAg', reply_markup=RELEASE_KEYBOARD)  # crying blond
+                self.send_msg('no one is coming!!! :-(')
+            elif len(here) == 1:
+                self.send_msg('{}, may the force be with you'.format(list(here)[0]), reply_markup=RELEASE_KEYBOARD)
+                self.send_sticker('BQADAQADKwEAAtpxZgcxjbgZ2PsfdwI')  # luke skywalker - stand on one hand
+            else:
+                self.send_msg('{} brogrammers gonna have fun'.format(len(here)), reply_markup=RELEASE_KEYBOARD)
+
+            if len(losers) > 0:
+                self.send_msg('It appears that {} {} low self esteem'.format(self.comma_names(losers),
+                                                                             'has' if len(losers) == 1 else 'have'))
+                self.send_sticker('BQADBAADjAADD4KaAAFQZH8V3rLRwAI')  # spiderman - look at him and laugh
+
+            self.timed_out = 1
 
         self.clean_srv_msgs()
         self.send_msg('ETAs?', reply_markup)
-        time.sleep(self.timeout)
-        updates = self.bot.getUpdates()
-
-        for i in updates:
-            if i.message.text in here_msgs:
-                here.add(self.get_name(i.message.from_user))
-            if i.message.text in loser_msgs:
-                losers.add(self.get_name(i.message.from_user))
-
-        if len(here) == 0:
-            self.send_sticker('BQADAwADegADv4yQBIEb_nJ9h1mRAg', reply_markup=RELEASE_KEYBOARD)  # crying blond
-            self.send_msg('no one is coming!!! :-(')
-        elif len(here) == 1:
-            self.send_msg('{}, may the force be with you'.format(list(here)[0]), reply_markup=RELEASE_KEYBOARD)
-            self.send_sticker('BQADAQADKwEAAtpxZgcxjbgZ2PsfdwI')  # luke skywalker - stand on one hand
-        else:
-            self.send_msg('{} brogrammers gonna have fun'.format(len(here)), reply_markup=RELEASE_KEYBOARD)
-
-        if len(losers) > 0:
-            self.send_msg('It appears that {} {} low self esteem'.format(self.comma_names(losers),
-                                                                         'has' if len(losers) == 1 else 'have'))
-            self.send_sticker('BQADBAADjAADD4KaAAFQZH8V3rLRwAI')  # spiderman - look and him and laugh
+        signal.signal(signal.SIGALRM, send_summary)
+        signal.alarm(self.timeout)
+        while not self.timed_out:
+            last_upd = self.handle_normal_day_replies(last_upd, here, losers)
+            time.sleep(5)
 
     def clean_srv_msgs(self):
         updates = self.bot.getUpdates()
-        while len(updates) > 0:
+        while updates:
             updates = self.bot.getUpdates(updates[-1].update_id + 1)
+
+    def handle_normal_day_replies(self, last_upd, here, losers):
+        updates = self.bot.getUpdates(last_upd + 1)
+        if updates:
+            for i in updates:
+                if i.message.text in HERE_MSGS:
+                    here.add(self.get_name(i.message.from_user))
+                if i.message.text in LOSER_MSGS:
+                    losers.add(self.get_name(i.message.from_user))
+            last_upd = updates[-1].update_id
+        return last_upd
 
     @staticmethod
     def get_name(chat):
