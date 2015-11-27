@@ -65,7 +65,7 @@ class Breakfast(object):
         losers = set()
         repliers = Counter()
         custom_keyboard = [HERE_MSGS[:2], HERE_MSGS[2:] + ['>=10'], LOSER_MSGS]
-        reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
+        reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard, one_time_keyboard=True)
         last_upd = -1
 
         def send_summary(_signum, _frame):
