@@ -1,4 +1,5 @@
 import calendar
+import os
 import signal
 import time
 from ConfigParser import ConfigParser
@@ -184,7 +185,9 @@ class Breakfast(object):
 
 
 def main():
-    breakfast = Breakfast('breakfast.conf')
+    workdir = os.path.dirname(os.path.realpath(__file__))
+    conf = os.path.join(workdir, 'breakfast.conf')
+    breakfast = Breakfast(conf)
     breakfast.start()
 
 if __name__ == '__main__':
