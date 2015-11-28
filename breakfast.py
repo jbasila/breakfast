@@ -1,3 +1,4 @@
+import calendar
 import signal
 import time
 from ConfigParser import ConfigParser
@@ -18,6 +19,8 @@ class Breakfast(object):
     token = None
     chat_id = None
     timeout = None
+    weekend = (calendar.FRIDAY, calendar.SATURDAY)
+    gila_days = None
 
     def __init__(self, conf_fname):
         self.load_conf(conf_fname)
@@ -29,6 +32,8 @@ class Breakfast(object):
         self.token = cfg.get('global', 'token')
         self.chat_id = cfg.getint('global', 'chat_id')
         self.timeout = cfg.getint('global', 'timeout')  # in seconds
+        self.gila_days = tuple(time.strptime(x.strip()[:3], '%a').tm_wday
+                               for x in cfg.get('global', 'gila_days').split(','))
 
     def send_msg(self, text, reply_markup=None):
         kwargs = dict(chat_id=self.chat_id, text=text)
@@ -168,12 +173,19 @@ class Breakfast(object):
             res = '{} and {}'.format(', '.join(names[:-1]), names[-1])
         return res
 
+    def start(self):
+        today = time.localtime(time.time()).tm_wday
+        if today in self.weekend:
+            pass
+        elif today in self.gila_days:
+            self.gila_day()
+        else:
+            self.normal_day()
+
 
 def main():
     breakfast = Breakfast('breakfast.conf')
-    # breakfast.smack_these_etas()
-    breakfast.normal_day()
-
+    breakfast.start()
 
 if __name__ == '__main__':
     main()
