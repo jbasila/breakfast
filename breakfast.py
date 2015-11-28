@@ -10,6 +10,10 @@ HERE_MSGS = ['here!', '7:25', '8:08']
 LOSER_MSGS = ["I'm a loser!"]
 
 
+class EtaTimedout(Exception):
+    pass
+
+
 class Breakfast(object):
     token = None
     chat_id = None
@@ -18,7 +22,6 @@ class Breakfast(object):
     def __init__(self, conf_fname):
         self.load_conf(conf_fname)
         self.bot = telegram.Bot(token=self.token)
-        self.timed_out = 0
 
     def load_conf(self, fname):
         cfg = ConfigParser()
@@ -84,15 +87,20 @@ class Breakfast(object):
                                                                              'has' if len(losers) == 1 else 'have'))
                 self.send_sticker('BQADBAADjAADD4KaAAFQZH8V3rLRwAI')  # spiderman - look at him and laugh
 
-            self.timed_out = 1
+            raise EtaTimedout()
 
         self.clean_srv_msgs()
         self.send_msg('ETAs?', reply_markup)
-        signal.signal(signal.SIGALRM, send_summary)
-        signal.alarm(self.timeout)
-        while not self.timed_out:
-            last_upd = self.handle_normal_day_replies(last_upd, here, losers, repliers)
-            time.sleep(5)
+
+        try:
+            signal.signal(signal.SIGALRM, send_summary)
+            signal.alarm(self.timeout)
+            while 1:
+                last_upd = self.handle_normal_day_replies(last_upd, here, losers, repliers)
+                time.sleep(5)
+        except EtaTimedout:
+            pass
+
 
     def clean_srv_msgs(self):
         updates = self.bot.getUpdates()
