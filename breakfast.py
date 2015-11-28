@@ -60,7 +60,12 @@ class Breakfast(object):
         self.send_sticker('BQADBAADcgADD4KaAAEfqtBiFqveBQI')
 
     def gila_day(self):
-        pass
+        custom_keyboard = [[telegram.Emoji.THUMBS_UP_SIGN]]
+        reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
+        self.send_msg('Gila today?', reply_markup=reply_markup)
+        time.sleep(self.timeout)
+        self.send_msg('Gila it is!', reply_markup=RELEASE_KEYBOARD)
+        self.clean_srv_msgs()
 
     def normal_day(self):
         here = set()
