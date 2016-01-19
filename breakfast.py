@@ -8,7 +8,7 @@ from collections import Counter
 import telegram
 
 RELEASE_KEYBOARD = telegram.ReplyKeyboardHide()
-HERE_MSGS = ['here!', '7:25', '8:08']
+HERE_MSGS = ['here!', '7:25', '8:08', '8:38', '9:00']
 LOSER_MSGS = ["I'm a loser!"]
 
 
@@ -58,7 +58,7 @@ class Breakfast(object):
         self.send_msg('ETAs')
         self.send_msg('john: 7:25')
         self.send_msg('sagi: 8:08')
-        self.send_msg('noam: >=10')
+        self.send_msg('noam: >=9:30')
         self.send_msg('yoav: wait for me guys!')
         self.send_sticker('BQADAwADNQADYK6GBTswjvGbLJgxAg')
         self.send_msg('noam: john, gila tomorrow?')
@@ -77,7 +77,7 @@ class Breakfast(object):
         here = set()
         losers = set()
         repliers = Counter()
-        custom_keyboard = [HERE_MSGS[:2], HERE_MSGS[2:] + ['>=10'], LOSER_MSGS]
+        custom_keyboard = [HERE_MSGS[:3], HERE_MSGS[3:] + ['>=9:30'], LOSER_MSGS]
         reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard, one_time_keyboard=True)
         last_upd = -1
 
