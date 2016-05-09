@@ -2,6 +2,7 @@ import calendar
 import os
 import signal
 import time
+import argparse
 from ConfigParser import ConfigParser
 from collections import Counter
 
@@ -185,9 +186,13 @@ class Breakfast(object):
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-c", "--conf",
+                        help="Configuration file")
+    args = parser.parse_args()
+
     workdir = os.path.dirname(os.path.realpath(__file__))
-    conf = os.path.join(workdir, 'breakfast.conf')
-    breakfast = Breakfast(conf)
+    breakfast = Breakfast(args.conf)
     breakfast.start()
 
 if __name__ == '__main__':
