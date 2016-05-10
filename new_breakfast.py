@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
-from telegram import Emoji, ForceReply, ReplyKeyboardMarkup, KeyboardButton
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
-import argparse, ConfigParser
+from telegram import ReplyKeyboardMarkup, ForceReply
+from telegram.ext import Updater, MessageHandler, Filters
+import argparse
+
 
 class EtaChat(object):
     token = None
@@ -16,7 +17,9 @@ class EtaChat(object):
         self.chat_id = chat_id
         self.timeout = timeout
         self.updater = Updater(self.token)
-        self.custom_keyboard = [['Here', '7:30', '8:00'], ['8:30', '9:00', '9:30'], ['Won\'t make it']]
+        self.custom_keyboard = [['Here', '7:30', '8:00'],
+                                ['8:30', '9:00', '9:30'],
+                                ['Won\'t make it']]
         self.reply_markup = ReplyKeyboardMarkup(self.custom_keyboard, one_time_keyboard=True)
         self.updater.dispatcher.addHandler(MessageHandler([Filters.text], self.set_value))
 
