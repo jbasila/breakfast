@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardHide
-from telegram.ext import Updater, MessageHandler, Filters
+from telegram.ext import Updater, MessageHandler, Filters, CommandHandler
 import argparse
+from configparser import ConfigParser
 
 
 class EtaChat(object):
@@ -25,14 +26,15 @@ class EtaChat(object):
         self.custom_keyboard = [['Here', '7:30', '8:00'],
                                 ['8:30', '9:00', '9:30'],
                                 ['Won\'t make it']]
-        self.reply_markup = ReplyKeyboardMarkup(self.custom_keyboard, one_time_keyboard=True)
+        self.reply_markup = ReplyKeyboardMarkup(self.custom_keyboard,
+                                                one_time_keyboard=True)
 
-        self.updater.dispatcher.addHandler(CommandHandler('start', self.command_start))
-        self.updater.dispatcher.addHandler(CommandHandler('help', self.command_help))
-        self.updater.dispatcher.addHandler(CommandHandler('begin', self.command_begin))
-        self.updater.dispatcher.addHandler(CommandHandler('send', self.command_send))
-        self.updater.dispatcher.addHandler(CommandHandler('end', self.command_end))
-        self.updater.dispatcher.addHandler(MessageHandler([Filters.text], self.set_value))
+        self.updater.dispatcher.add_handler(CommandHandler('start', self.command_start))
+        self.updater.dispatcher.add_handler(CommandHandler('help', self.command_help))
+        self.updater.dispatcher.add_handler(CommandHandler('begin', self.command_begin))
+        self.updater.dispatcher.add_handler(CommandHandler('send', self.command_send))
+        self.updater.dispatcher.add_handler(CommandHandler('end', self.command_end))
+        self.updater.dispatcher.add_handler(MessageHandler([Filters.text], self.set_value))
 
     def do_begin_eta_collection(self):
         if not self.eta_collection_on:
@@ -48,14 +50,17 @@ class EtaChat(object):
                                          reply_markup=ReplyKeyboardHide())
         self.eta_collection_on = False
 
-    def do_start(self):
-        self.do_help()
+    def do_start(self, bot, update):
+        self.do_help(update)
 
-    def do_help(self):
+    def do_help(self, update):
         message = ''
+        self.updater.bot.sendMessage()
 
     def command_start(self, bot, update):
-        pass
+        print(update.message.chat.id)
+        print(update.message.chat)
+        print(update.message)
 
     def command_help(self, bot, update):
         pass
@@ -74,7 +79,7 @@ class EtaChat(object):
             self.do_end_eta_collection()
 
     def set_value(self, bot, update):
-        print update
+        print(update)
 
     def run(self):
         def beep(bot):
@@ -88,13 +93,14 @@ class EtaChat(object):
         # SIGTERM or SIGABRT
         self.updater.idle()
 
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--conf",
                         help="Configuration file")
     args = parser.parse_args()
 
-    cfg = ConfigParser.ConfigParser()
+    cfg = ConfigParser()
     cfg.read(args.conf)
 
     eta_chat = EtaChat(cfg.get('bot', 'token_id'),
