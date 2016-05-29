@@ -2,6 +2,7 @@
 
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardHide
 from telegram.ext import Updater, MessageHandler, Filters, CommandHandler
+from configparser import ConfigParser
 
 def set_value(bot, update):
     print(update)
@@ -12,8 +13,12 @@ def main():
                        ['B1', 'B2', 'B3'],
                        ['C']]
 
-    updater = Updater('204898432:AAGrfj82Lt8VxNW6oDXrEoamqe2Mk4byiMQ')
-    chat_id = -141663891
+    cfg = ConfigParser()
+    cfg.read('bot.cfg')
+
+    updater = Updater(cfg.get('bot', 'token_id'))
+    chat_id = cfg.getint('bot', 'chat_id')
+
     reply_markup = ReplyKeyboardMarkup(custom_keyboard,
                                        one_time_keyboard=True)
 
