@@ -8,6 +8,24 @@ from datetime import datetime
 
 WILL_JOIN_OPTIONS = ['Here', '7:30', '8:00', '8:30', '9:00', '9:30']
 
+class FunnyMessageBucket(object):
+    def __init__(self):
+        pass
+
+    def respect_previous_creators(self):
+        _message = 'I usually tend to ignore or blow others away but my ' \
+                   'master told me to be polite to you specifically Mr. ' \
+                   'Noam. So I will be polite and tell you that I have ' \
+                   'only one master and that is not you :). You have a ' \
+                   'great day now! I will be ignoring messages now.'
+        return _message
+
+    def not_collecting_eta(self):
+        _message = 'Not collecting ETA currently'
+
+        return _message
+
+
 class EtaChat(object):
     token = None
     chat_id = None
@@ -25,11 +43,14 @@ class EtaChat(object):
         self._startTimeInt = int(self.start_time[0]) * 60 + int(self.start_time[1])
         self._endTimeInt = int(self.end_time[0]) * 60 + int(self.end_time[1])
 
+        self.funny_message_bucket = FunnyMessageBucket()
         self.eta_collection_on = False
 
         self.updater = Updater(self.token)
-        self.custom_keyboard = [['Here', '7:30', '8:00'],
-                                ['8:30', '9:00', '9:30'],
+
+        self.custom_keyboard = [WILL_JOIN_OPTIONS[:1],
+                                WILL_JOIN_OPTIONS[1:4],
+                                WILL_JOIN_OPTIONS[4:],
                                 ['Won\'t make it']]
         self.reply_markup = ReplyKeyboardMarkup(self.custom_keyboard,
                                                 one_time_keyboard=True)
@@ -104,13 +125,12 @@ class EtaChat(object):
             self.do_end_eta_collection()
 
     def message_received(self, bot, update):
-        # print(update.message)
-        c = self.custom_keyboard.flatten()
-        print(c)
-        print(c)
-        # if update.message.chat_id == self.chat_id:
-        #     if self.eta_collection_on:
-        #         pass
+        if update.message.chat_id == self.chat_id:
+            if self.eta_collection_on:
+                pass
+            else:
+                self.updater.bot.send_message(chat_id=self.chat_id,
+                                              text=self.funny_message_bucket.not_collecting_eta())
 
     def run(self):
         def beep(bot):
