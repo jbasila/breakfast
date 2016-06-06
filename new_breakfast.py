@@ -5,10 +5,10 @@ from telegram.ext import Updater, MessageHandler, Filters, CommandHandler
 import argparse
 from configparser import ConfigParser
 from datetime import datetime
-from FunnyMessageBucket import MessageBucket
+from FunnyMessagesBucket import MessagesBucket
 
 WILL_JOIN_OPTIONS = ['Here', '7:30', '8:00', '8:30', '9:00', '9:30']
-ACTIVE_DAYS = [ 0, 1, 2, 3, 4 ]
+
 
 class EtaChat(object):
     token = None
@@ -17,17 +17,24 @@ class EtaChat(object):
     custom_keyboard = None
     reply_markup = None
 
-    def __init__(self, token, chat_id, admin_chat_id, start_time, end_time):
+    def __init__(self,
+                 token,
+                 chat_id,
+                 admin_chat_id,
+                 start_time,
+                 end_time,
+                 active_days):
         self.token = token
         self.chat_id = chat_id
         self.admin_chat_id = admin_chat_id
         self.start_time = start_time.split(':')
         self.end_time = end_time.split(':')
+        self.active_days = [int(n) for n in active_days.split(',')]
 
         self._startTimeInt = int(self.start_time[0]) * 60 + int(self.start_time[1])
         self._endTimeInt = int(self.end_time[0]) * 60 + int(self.end_time[1])
 
-        self.funny_message_bucket = MessageBucket()
+        self.funny_message_bucket = MessagesBucket()
 
         self.eta_collection_on = False
         _now = datetime.now()
@@ -36,6 +43,8 @@ class EtaChat(object):
         if self._startTimeInt <= _nowTimeInt <= self._endTimeInt:
             self.is_active_time_interval = True
             self.eta_collection_on = True
+
+        self.eta_dict = dict()
 
         self.updater = Updater(self.token)
 
@@ -81,12 +90,7 @@ class EtaChat(object):
         else:
             # is this Noam?
             if update.message.chat.username == 'tsnoam':
-                _message_reply = 'I usually tend to ignore or blow ' \
-                                 'others away but my master told me to be polite ' \
-                                 'to you specifically Mr. Noam. So I will be polite ' \
-                                 'and tell you that I have only one master and that ' \
-                                 'is not you :). You have a great day now! I will be ' \
-                                 'ignoring messages now.'
+                _message_reply = self.funny_message_bucket.respect_previous_creators()
 
             self.updater.bot.send_message(chat_id=self.admin_chat_id,
                                           text='Username ({} {} - @{}, chat_id = {}), '
@@ -118,7 +122,16 @@ class EtaChat(object):
     def message_received(self, bot, update):
         if update.message.chat_id == self.chat_id:
             if self.eta_collection_on:
-                pass
+                if update.message.from_user.id in self.eta_dict:
+                    self.updater.bot.send_message(self.chat_id,
+                                                  text=self.funny_message_bucket.no_double_votes())
+                else:
+                    # Sanity of input
+                    if update.message.text in WILL_JOIN_OPTIONS:
+                        self.eta_dict[update.message.from_user.id] = update.message.text
+                    else:
+                        self.updater.bot.send_message(chat_id=self.chat_id,
+                                                      text=self.funny_message_bucket.invalid_eta_input())
             else:
                 self.updater.bot.send_message(chat_id=self.chat_id,
                                               text=self.funny_message_bucket.not_collecting_eta())
@@ -128,7 +141,7 @@ class EtaChat(object):
             _now = datetime.now()
             _nowTimeInt = int(_now.hour) * 60 + int(_now.minute)
 
-            if _now.isoweekday() in ACTIVE_DAYS:
+            if _now.isoweekday() not in self.active_days:
                 # Weekend, not doing notification
                 return
 
@@ -150,7 +163,7 @@ class EtaChat(object):
         self.updater.start_polling()
 
         self.updater.bot.send_message(self.admin_chat_id,
-                                      text='Bot is now online')
+                                      text=self.funny_message_bucket.bot_is_now_online())
 
         # Run the bot until the user presses Ctrl-C or the process receives SIGINT,
         # SIGTERM or SIGABRT
@@ -170,7 +183,8 @@ def main():
                        cfg.getint('bot', 'chat_id'),
                        cfg.getint('bot', 'admin_chat_id'),
                        cfg.get('breakfast', 'start_time'),
-                       cfg.get('breakfast', 'end_time'))
+                       cfg.get('breakfast', 'end_time'),
+                       cfg.get('breakfast', 'active_days'))
 
     eta_chat.run()
 
