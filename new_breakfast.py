@@ -5,26 +5,10 @@ from telegram.ext import Updater, MessageHandler, Filters, CommandHandler
 import argparse
 from configparser import ConfigParser
 from datetime import datetime
+from FunnyMessageBucket import MessageBucket
 
 WILL_JOIN_OPTIONS = ['Here', '7:30', '8:00', '8:30', '9:00', '9:30']
-
-class FunnyMessageBucket(object):
-    def __init__(self):
-        pass
-
-    def respect_previous_creators(self):
-        _message = 'I usually tend to ignore or blow others away but my ' \
-                   'master told me to be polite to you specifically Mr. ' \
-                   'Noam. So I will be polite and tell you that I have ' \
-                   'only one master and that is not you :). You have a ' \
-                   'great day now! I will be ignoring messages now.'
-        return _message
-
-    def not_collecting_eta(self):
-        _message = 'Not collecting ETA currently'
-
-        return _message
-
+ACTIVE_DAYS = [ 0, 1, 2, 3, 4 ]
 
 class EtaChat(object):
     token = None
@@ -43,8 +27,15 @@ class EtaChat(object):
         self._startTimeInt = int(self.start_time[0]) * 60 + int(self.start_time[1])
         self._endTimeInt = int(self.end_time[0]) * 60 + int(self.end_time[1])
 
-        self.funny_message_bucket = FunnyMessageBucket()
+        self.funny_message_bucket = MessageBucket()
+
         self.eta_collection_on = False
+        _now = datetime.now()
+        _nowTimeInt = int(_now.hour) * 60 + int(_now.minute)
+        self.is_active_time_interval = False
+        if self._startTimeInt <= _nowTimeInt <= self._endTimeInt:
+            self.is_active_time_interval = True
+            self.eta_collection_on = True
 
         self.updater = Updater(self.token)
 
@@ -137,23 +128,22 @@ class EtaChat(object):
             _now = datetime.now()
             _nowTimeInt = int(_now.hour) * 60 + int(_now.minute)
 
-            if _now.isoweekday() > 4:
+            if _now.isoweekday() in ACTIVE_DAYS:
                 # Weekend, not doing notification
                 return
 
-            # Check if should start collecting time
-            if self.eta_collection_on:
-                # check if reached end of collection
+            if self.is_active_time_interval:
                 if self._startTimeInt <= _nowTimeInt <= self._endTimeInt:
-                    # Still collecting
                     pass
                 else:
-                    # Reached end of collection, notify and let's do a summary.
                     self.do_end_eta_collection()
+                    self.is_active_time_interval = False
             else:
-                # check if in time frame
                 if self._startTimeInt <= _nowTimeInt <= self._endTimeInt:
                     self.do_begin_eta_collection()
+                    self.is_active_time_interval = True
+                else:
+                    pass
 
         self.updater.job_queue.put(beep, 1, repeat=True)
         # Start the Bot
