@@ -8,6 +8,7 @@ from datetime import datetime
 from FunnyMessagesBucket import MessagesBucket
 
 WILL_JOIN_OPTIONS = ['Here', '7:30', '8:00', '8:30', '9:00', '9:30']
+WONT_MAKE_IT = ['Won\'t make it']
 
 
 class EtaChat(object):
@@ -51,7 +52,7 @@ class EtaChat(object):
         self.custom_keyboard = [WILL_JOIN_OPTIONS[:1],
                                 WILL_JOIN_OPTIONS[1:4],
                                 WILL_JOIN_OPTIONS[4:],
-                                ['Won\'t make it']]
+                                WONT_MAKE_IT]
         self.reply_markup = ReplyKeyboardMarkup(self.custom_keyboard,
                                                 one_time_keyboard=True)
 
@@ -65,16 +66,22 @@ class EtaChat(object):
     def do_begin_eta_collection(self):
         if not self.eta_collection_on:
             self.updater.bot.send_message(self.chat_id,
-                                          text="ETA?",
+                                          text=self.funny_message_bucket.ask_for_eta(),
                                           reply_markup=self.reply_markup)
         self.eta_collection_on = True
 
     def do_end_eta_collection(self):
         if self.eta_collection_on:
             self.updater.bot.send_message(chat_id=self.chat_id,
-                                          text='Done for now, here is the status:',
+                                          text=self.funny_message_bucket.done_collecting_eta(),
                                           reply_markup=ReplyKeyboardHide())
+            # do the summary
+            for key, value in self.eta_dict.iteritems():
+                self.updater.bot.send_message(chat_id=self.chat_id,
+                                              text='key = {}, value = {}'.format(key, value))
+
         self.eta_collection_on = False
+        self.eta_dict.clear()
 
     def do_start(self, bot, update):
         self.do_help(update)
@@ -127,7 +134,7 @@ class EtaChat(object):
                                                   text=self.funny_message_bucket.no_double_votes())
                 else:
                     # Sanity of input
-                    if update.message.text in WILL_JOIN_OPTIONS:
+                    if update.message.text in WILL_JOIN_OPTIONS or update.message.text in WONT_MAKE_IT:
                         self.eta_dict[update.message.from_user.id] = update.message.text
                     else:
                         self.updater.bot.send_message(chat_id=self.chat_id,
@@ -142,7 +149,7 @@ class EtaChat(object):
             _nowTimeInt = int(_now.hour) * 60 + int(_now.minute)
 
             if _now.isoweekday() not in self.active_days:
-                # Weekend, not doing notification
+                # Not in the active day period
                 return
 
             if self.is_active_time_interval:
