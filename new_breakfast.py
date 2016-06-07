@@ -62,18 +62,29 @@ class EtaChat(object):
         self.updater.dispatcher.add_handler(CommandHandler('send', self.command_send))
         self.updater.dispatcher.add_handler(CommandHandler('end', self.command_end))
         self.updater.dispatcher.add_handler(MessageHandler([Filters.text], self.message_received))
+        self.updater.dispatcher.add_handler(MessageHandler([Filters.sticker, Filters.photo], self.sticker_received))
+
+    @staticmethod
+    def send_funny_message(bot, chat_id, message_func):
+        message_type, message_content = message_func()
+        if message_type == 'text':
+            bot.send_message(chat_id,
+                             text=message_content)
+        elif message_type == 'sticker':
+            bot.send_sticker(chat_id,
+                             message_content)
 
     def do_begin_eta_collection(self):
         if not self.eta_collection_on:
             self.updater.bot.send_message(self.chat_id,
-                                          text=self.funny_message_bucket.ask_for_eta(),
+                                          text=self.funny_message_bucket.ask_for_eta()[1],
                                           reply_markup=self.reply_markup)
         self.eta_collection_on = True
 
     def do_end_eta_collection(self):
         if self.eta_collection_on:
             self.updater.bot.send_message(chat_id=self.chat_id,
-                                          text=self.funny_message_bucket.done_collecting_eta(),
+                                          text=self.funny_message_bucket.done_collecting_eta()[1],
                                           reply_markup=ReplyKeyboardHide())
             # do the summary
             for key, value in self.eta_dict.iteritems():
@@ -97,7 +108,7 @@ class EtaChat(object):
         else:
             # is this Noam?
             if update.message.chat.username == 'tsnoam':
-                _message_reply = self.funny_message_bucket.respect_previous_creators()
+                _message_reply = self.funny_message_bucket.respect_previous_creators()[1]
 
             self.updater.bot.send_message(chat_id=self.admin_chat_id,
                                           text='Username ({} {} - @{}, chat_id = {}), '
@@ -130,18 +141,24 @@ class EtaChat(object):
         if update.message.chat_id == self.chat_id:
             if self.eta_collection_on:
                 if update.message.from_user.id in self.eta_dict:
-                    self.updater.bot.send_message(self.chat_id,
-                                                  text=self.funny_message_bucket.no_double_votes())
+                    EtaChat.send_funny_message(self.updater.bot,
+                                               self.chat_id,
+                                               self.funny_message_bucket.no_double_votes)
                 else:
                     # Sanity of input
                     if update.message.text in WILL_JOIN_OPTIONS or update.message.text in WONT_MAKE_IT:
                         self.eta_dict[update.message.from_user.id] = update.message.text
                     else:
-                        self.updater.bot.send_message(chat_id=self.chat_id,
-                                                      text=self.funny_message_bucket.invalid_eta_input())
+                        EtaChat.send_funny_message(self.updater.bot,
+                                                   self.chat_id,
+                                                   self.funny_message_bucket.invalid_eta_input)
             else:
-                self.updater.bot.send_message(chat_id=self.chat_id,
-                                              text=self.funny_message_bucket.not_collecting_eta())
+                EtaChat.send_funny_message(self.updater.bot,
+                                           self.chat_id,
+                                           self.funny_message_bucket.not_collecting_eta)
+
+    def sticker_received(self, bot, update):
+        print('STICKER: {}'.format(update))
 
     def run(self):
         def beep(bot):
@@ -169,8 +186,9 @@ class EtaChat(object):
         # Start the Bot
         self.updater.start_polling()
 
-        self.updater.bot.send_message(self.admin_chat_id,
-                                      text=self.funny_message_bucket.bot_is_now_online())
+        EtaChat.send_funny_message(self.updater.bot,
+                                   self.chat_id,
+                                   self.funny_message_bucket.bot_is_now_online)
 
         # Run the bot until the user presses Ctrl-C or the process receives SIGINT,
         # SIGTERM or SIGABRT
