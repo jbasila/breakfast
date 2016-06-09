@@ -24,13 +24,15 @@ class EtaChat(object):
                  admin_chat_id,
                  start_time,
                  end_time,
-                 active_days):
+                 active_days,
+                 reject_users):
         self.token = token
         self.chat_id = chat_id
         self.admin_chat_id = admin_chat_id
         self.start_time = start_time.split(':')
         self.end_time = end_time.split(':')
         self.active_days = [int(n) for n in active_days.split(',')]
+        self.reject_users = reject_users
 
         self._startTimeInt = int(self.start_time[0]) * 60 + int(self.start_time[1])
         self._endTimeInt = int(self.end_time[0]) * 60 + int(self.end_time[1])
@@ -83,13 +85,21 @@ class EtaChat(object):
 
     def do_end_eta_collection(self):
         if self.eta_collection_on:
-            self.updater.bot.send_message(chat_id=self.chat_id,
-                                          text=self.funny_message_bucket.done_collecting_eta()[1],
-                                          reply_markup=ReplyKeyboardHide())
+            _message_to_display = self.funny_message_bucket.done_collecting_eta()[1] + '\n'
+            _message_to_display += '|id|name|last|when|\n'
+            # self.updater.bot.send_message(chat_id=self.chat_id,
+            #                               text=self.funny_message_bucket.done_collecting_eta()[1],
+            #                               reply_markup=ReplyKeyboardHide())
             # do the summary
             for key, value in self.eta_dict.iteritems():
-                self.updater.bot.send_message(chat_id=self.chat_id,
-                                              text='key = {}, value = {}'.format(key, value))
+                _message_to_display += '|{}|{}|{}|{}|\n'.format(value[0], value[1], value[2], value[3])
+                # self.updater.bot.send_message(chat_id=self.chat_id,
+                #                               text='key = {}, value = {}'.format(key, value))
+
+            self.updater.bot.send_message(chat_id=self.chat_id,
+                                          text=_message_to_display,
+                                          parse_mode='Markdown',
+                                          reply_markup=ReplyKeyboardHide())
 
         self.eta_collection_on = False
         self.eta_dict.clear()
@@ -147,7 +157,11 @@ class EtaChat(object):
                 else:
                     # Sanity of input
                     if update.message.text in WILL_JOIN_OPTIONS or update.message.text in WONT_MAKE_IT:
-                        self.eta_dict[update.message.from_user.id] = update.message.text
+                        from_user = update.message.from_user
+                        self.eta_dict[update.message.from_user.id] = [from_user.id,
+                                                                      from_user.first_name,
+                                                                      from_user.last_name,
+                                                                      update.message.text]
                     else:
                         EtaChat.send_funny_message(self.updater.bot,
                                                    self.chat_id,
@@ -187,7 +201,7 @@ class EtaChat(object):
         self.updater.start_polling()
 
         EtaChat.send_funny_message(self.updater.bot,
-                                   self.chat_id,
+                                   self.admin_chat_id,
                                    self.funny_message_bucket.bot_is_now_online)
 
         # Run the bot until the user presses Ctrl-C or the process receives SIGINT,
@@ -209,7 +223,8 @@ def main():
                        cfg.getint('bot', 'admin_chat_id'),
                        cfg.get('breakfast', 'start_time'),
                        cfg.get('breakfast', 'end_time'),
-                       cfg.get('breakfast', 'active_days'))
+                       cfg.get('breakfast', 'active_days'),
+                       cfg.get('breakfast', 'reject_users'))
 
     eta_chat.run()
 

@@ -47,15 +47,25 @@ class MessagesBucket(object):
                            ['text', 'Hungry?'],
                            ['text', 'Wakey wakey!'],
                            ['text', 'Come on - start pressing the buttons:'],
-                           ['text', 'Yow yow yow - push d\'button:']]
+                           ['text', 'Yo yo yo - push d\'button:']]
 
         return self._chose_random_message(_messages_array)
 
     def done_collecting_eta(self):
         _messages_array = [['text', 'Done for now, here is the status:'],
                            ['text', 'Ladies and gents we have a final conclusion:'],
-                           ['text', 'Ok thank god it\'s over! results:'],
-                           ['text', 'I\'m out of here:']]
+                           ['text', 'OK thank god it\'s over! results:'],
+                           ['text', 'I\'m out of here:'],
+                           ['text', 'No more votes please:'],
+                           ['text', 'GONG:']]
+
+        return self._chose_random_message(_messages_array)
+
+    def you_can_not_vote(self):
+        _messages_array = [['text', 'You don\'t have voting permission'],
+                           ['text', 'Access denied!'],
+                           ['text', 'Ignoring that...'],
+                           ['text', 'Like you will join for breakfast...']]
 
         return self._chose_random_message(_messages_array)
 
