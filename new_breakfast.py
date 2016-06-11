@@ -84,17 +84,18 @@ class EtaChat(object):
         self.eta_collection_on = True
 
     def do_end_eta_collection(self):
+        _message_to_display = ''
         if self.eta_collection_on:
-            _message_to_display = self.funny_message_bucket.done_collecting_eta()[1] + '\n'
-            _message_to_display += '|id|name|last|when|\n'
-            # self.updater.bot.send_message(chat_id=self.chat_id,
-            #                               text=self.funny_message_bucket.done_collecting_eta()[1],
-            #                               reply_markup=ReplyKeyboardHide())
-            # do the summary
-            for key, value in self.eta_dict.iteritems():
-                _message_to_display += '|{}|{}|{}|{}|\n'.format(value[0], value[1], value[2], value[3])
-                # self.updater.bot.send_message(chat_id=self.chat_id,
-                #                               text='key = {}, value = {}'.format(key, value))
+            if len(self.eta_dict) > 1:
+                _format_string = '*{}* ({})\n'
+                _message_to_display += self.funny_message_bucket.done_collecting_eta()[1] + '\n'
+                for key, value in self.eta_dict.iteritems():
+                    _message_to_display += _format_string.format(value[1] + ' ' + value[2], value[3])
+            elif len(self.eta_dict) == 1:
+                _message_to_display += self.funny_message_bucket.only_one_answered()[1] + '\n'
+                _message_to_display += '{}, they could still join later :)'.format(self.eta_dict.itervalues().next()[1])
+            else:
+                _message_to_display += self.funny_message_bucket.no_one_answered()[1]
 
             self.updater.bot.send_message(chat_id=self.chat_id,
                                           text=_message_to_display,

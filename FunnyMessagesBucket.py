@@ -61,6 +61,18 @@ class MessagesBucket(object):
 
         return self._chose_random_message(_messages_array)
 
+    def only_one_answered(self):
+        _messages_array = [['text', 'That\'s not fun, only one participant:'],
+                           ['text', 'I\'m all alone there\'s no one here beside me:']]
+
+        return self._chose_random_message(_messages_array)
+
+    def no_one_answered(self):
+        _messages_array = [['text', 'Looks like it\'s too early, no one answered!'],
+                           ['text', 'Where is everyone?']]
+
+        return self._chose_random_message(_messages_array)
+
     def you_can_not_vote(self):
         _messages_array = [['text', 'You don\'t have voting permission'],
                            ['text', 'Access denied!'],
