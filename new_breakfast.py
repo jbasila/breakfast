@@ -125,15 +125,15 @@ class EtaChat(object):
                                       parse_mode='Markdown')
 
     def command_start(self, bot, update):
-        _message_reply = None
+        _message_func = None
         if update.message.chat.id == self.admin_chat_id:
-            _message_reply = [ 'text', 'Welcome master' ]
+            _message_func = self.funny_message_bucket.welcome_master
         else:
             # is this Noam?
             if update.message.chat.username == 'tsnoam':
-                _message_reply = self.funny_message_bucket.respect_previous_creators()
+                _message_func = self.funny_message_bucket.respect_previous_creators
             else:
-                _message_reply = self.funny_message_bucket.you_are_not_my_master()
+                _message_func = self.funny_message_bucket.you_are_not_my_master
 
             self.updater.bot.send_message(chat_id=self.admin_chat_id,
                                           text='Username ({} {} - @{}, chat_id = {}), '
@@ -142,10 +142,10 @@ class EtaChat(object):
                                                                             update.message.chat.username,
                                                                             update.message.chat_id))
 
-        if _message_reply is not None:
+        if _message_func is not None:
             self.send_funny_message(self.updater.bot,
                                     update.message.chat.id,
-                                    _message_reply)
+                                    _message_func)
 
     def command_help(self, bot, update):
         self.do_help(update)

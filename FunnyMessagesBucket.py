@@ -11,6 +11,11 @@ class MessagesBucket(object):
         _choice = _messages_array[random.randint(0, len(_messages_array) - 1)]
         return _choice[0], _choice[1]
 
+    def welcome_master(self):
+        _messages_array = [['text', 'Welcome master']]
+
+        return self._chose_random_message(_messages_array)
+
     def respect_previous_creators(self):
         _messages_array = [['text', 'I usually tend to ignore or blow others away but my master told me to be polite '
                                     'to you specifically Mr. Noam. So I will be polite and tell you that I have only '
