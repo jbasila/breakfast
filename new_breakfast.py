@@ -105,9 +105,6 @@ class EtaChat(object):
         self.eta_collection_on = False
         self.eta_dict.clear()
 
-    def do_start(self, bot, update):
-        self.do_help(update)
-
     def do_help(self, update):
         _help_message = ''
 
@@ -130,11 +127,13 @@ class EtaChat(object):
     def command_start(self, bot, update):
         _message_reply = None
         if update.message.chat.id == self.admin_chat_id:
-            _message_reply = 'Welcome master'
+            _message_reply = [ 'text', 'Welcome master' ]
         else:
             # is this Noam?
             if update.message.chat.username == 'tsnoam':
-                _message_reply = self.funny_message_bucket.respect_previous_creators()[1]
+                _message_reply = self.funny_message_bucket.respect_previous_creators()
+            else:
+                _message_reply = self.funny_message_bucket.you_are_not_my_master()
 
             self.updater.bot.send_message(chat_id=self.admin_chat_id,
                                           text='Username ({} {} - @{}, chat_id = {}), '
@@ -144,8 +143,9 @@ class EtaChat(object):
                                                                             update.message.chat_id))
 
         if _message_reply is not None:
-            self.updater.bot.send_message(chat_id=update.message.chat.id,
-                                          text=_message_reply)
+            self.send_funny_message(self.updater.bot,
+                                    update.message.chat.id,
+                                    _message_reply)
 
     def command_help(self, bot, update):
         self.do_help(update)
