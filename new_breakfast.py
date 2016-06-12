@@ -61,8 +61,8 @@ class EtaChat(object):
         self.updater.dispatcher.add_handler(CommandHandler('start', self.command_start))
         self.updater.dispatcher.add_handler(CommandHandler('help', self.command_help))
         self.updater.dispatcher.add_handler(CommandHandler('begin', self.command_begin))
-        self.updater.dispatcher.add_handler(CommandHandler('send', self.command_send))
         self.updater.dispatcher.add_handler(CommandHandler('end', self.command_end))
+        self.updater.dispatcher.add_handler(CommandHandler('send', self.command_send))
         self.updater.dispatcher.add_handler(MessageHandler([Filters.text], self.message_received))
         self.updater.dispatcher.add_handler(MessageHandler([Filters.sticker, Filters.photo], self.sticker_received))
 
@@ -109,8 +109,23 @@ class EtaChat(object):
         self.do_help(update)
 
     def do_help(self, update):
-        message = ''
-        self.updater.bot.send_message()
+        _help_message = ''
+
+        if update.message.chat.id == self.admin_chat_id:
+            _help_message = '*/start* - _Nothing much :)_\n' \
+                            '*/help* - _Display this help message_\n' \
+                            '*/begin* - _Start collecting ETA_\n' \
+                            '*/end* - _End ETA collection and display results_\n' \
+                            '*/send <message>* - _Send a message to group_'
+        else:
+            if update.message.chat.username == 'tsnoam':
+                _help_message = self.funny_message_bucket.respect_previous_creators()
+            else:
+                _help_message = self.funny_message_bucket.you_are_not_my_master()
+
+        self.updater.bot.send_message(chat_id=update.message.chat.id,
+                                      text=_help_message,
+                                      parse_mode='Markdown')
 
     def command_start(self, bot, update):
         _message_reply = None
@@ -133,7 +148,7 @@ class EtaChat(object):
                                           text=_message_reply)
 
     def command_help(self, bot, update):
-        pass
+        self.do_help(update)
 
     def command_begin(self, bot, update):
         if update.message.chat.id == self.admin_chat_id:
@@ -173,7 +188,10 @@ class EtaChat(object):
                                            self.funny_message_bucket.not_collecting_eta)
 
     def sticker_received(self, bot, update):
-        print('STICKER: {}'.format(update))
+        if update.message.chat.id == self.admin_chat_id:
+            _message_to_send = 'got a sticker: {}'.format(update.message.sticker.file_id)
+            self.updater.bot.send_message(self.admin_chat_id,
+                                          text=_message_to_send)
 
     def run(self):
         def beep(bot):

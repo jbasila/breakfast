@@ -19,6 +19,15 @@ class MessagesBucket(object):
 
         return self._chose_random_message(_messages_array)
 
+    def you_are_not_my_master(self):
+        _messages_array = [['text', 'I don\'t like you so I\'m not going to talk to you!'],
+                           ['text', 'Dude, what are you doing?'],
+                           ['text', 'Leave me alone please'],
+                           ['text', 'I have only one master, and he does not share power!'],
+                           ['sticker', 'BQADBAADVwADc0euB0BYuyIGS-FVAg']]
+
+        return self._chose_random_message(_messages_array)
+
     def not_collecting_eta(self):
         _messages_array = [['text', 'Not collecting ETA currently'],
                            ['text', 'Dude, did you just wake up or something, I\'m not collecting ETA anymore!'],
@@ -29,7 +38,10 @@ class MessagesBucket(object):
                                     ' - maybe!'],
                            ['text', 'Please direct your message to /dev/null and we will be with you shortly -- NOT :)'],
                            ['text', 'Please don\'t call us, we\'ll call you!'],
-                           ['text', 'In which time zone are in exactly?']]
+                           ['text', 'In which time zone are in exactly?'],
+                           ['sticker', 'BQADAQADOQADfwyFBGSByrhmyiflAg'],
+                           ['sticker', 'BQADBAADlQIAAhKL5QJmuApNJRp-5wI'],
+                           ['sticker', 'BQADAQADKQADFOc6AAG5o8d-L5rP1QI']]
 
         return self._chose_random_message(_messages_array)
 
