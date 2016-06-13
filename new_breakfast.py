@@ -106,23 +106,28 @@ class EtaChat(object):
         self.eta_dict.clear()
 
     def do_help(self, update):
-        _help_message = ''
-
         if update.message.chat.id == self.admin_chat_id:
             _help_message = '*/start* - _Nothing much :)_\n' \
                             '*/help* - _Display this help message_\n' \
                             '*/begin* - _Start collecting ETA_\n' \
                             '*/end* - _End ETA collection and display results_\n' \
                             '*/send <message>* - _Send a message to group_'
+
+            self.updater.bot.send_message(chat_id=update.message.chat.id,
+                                          text=_help_message,
+                                          parse_mode='Markdown')
         else:
             if update.message.chat.username == 'tsnoam':
-                _help_message = self.funny_message_bucket.respect_previous_creators()
+                _message_func = self.funny_message_bucket.respect_previous_creators
+                self.send_funny_message(self.updater.bot,
+                                        update.message.chat.id,
+                                        _message_func)
             else:
-                _help_message = self.funny_message_bucket.you_are_not_my_master()
+                _message_func = self.funny_message_bucket.you_are_not_my_master
+                self.send_funny_message(self.updater.bot,
+                                        update.message.chat.id,
+                                        _message_func)
 
-        self.updater.bot.send_message(chat_id=update.message.chat.id,
-                                      text=_help_message,
-                                      parse_mode='Markdown')
 
     def command_start(self, bot, update):
         _message_func = None
