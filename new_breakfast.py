@@ -5,7 +5,7 @@ from telegram.ext import Updater, MessageHandler, Filters, CommandHandler
 import argparse
 from configparser import ConfigParser
 from datetime import datetime
-from FunnyMessagesBucket import MessagesBucket
+from FunnyMessagesBucketToml import MessagesBucket
 
 WILL_JOIN_OPTIONS = ['Here', '7:30', '8:00', '8:30', '9:00', '9:30']
 WONT_MAKE_IT = ['Won\'t make it']
@@ -107,8 +107,7 @@ class EtaChat(object):
 
     def do_help(self, update):
         if update.message.chat.id == self.admin_chat_id:
-            _help_message = '*/start* - _Nothing much :)_\n' \
-                            '*/help* - _Display this help message_\n' \
+            _help_message = '*/help* - _Display this help message_\n' \
                             '*/begin* - _Start collecting ETA_\n' \
                             '*/end* - _End ETA collection and display results_\n' \
                             '*/send <message>* - _Send a message to group_'
