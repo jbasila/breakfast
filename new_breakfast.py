@@ -5,7 +5,7 @@ from telegram.ext import Updater, MessageHandler, Filters, CommandHandler
 import argparse
 from configparser import ConfigParser
 from datetime import datetime
-from FunnyMessagesBucketToml import MessagesBucket
+from FunnyMessagesBucket import MessagesBucket
 
 WILL_JOIN_OPTIONS = ['Here', '7:30', '8:00', '8:30', '9:00', '9:30']
 WONT_MAKE_IT = ['Won\'t make it']
