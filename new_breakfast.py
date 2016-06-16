@@ -175,6 +175,15 @@ class EtaChat(object):
                                                self.chat_id,
                                                self.funny_message_bucket.no_double_votes)
                 else:
+                    # check if user is a rejected user
+                    if update.message.chat.username in self.reject_users:
+                        _message_func = self.funny_message_bucket.you_can_not_vote
+
+                        if update.message.chat.username == 'tsnoam':
+                            _message_func = self.funny_message_bucket.respect_previous_creators
+                        self.send_funny_message(self.updater.bot,
+                                    update.message.chat.id,
+                                    self.funny_message_bucket.you_can_not_vote)
                     # Sanity of input
                     if update.message.text in WILL_JOIN_OPTIONS or update.message.text in WONT_MAKE_IT:
                         from_user = update.message.from_user
