@@ -86,17 +86,34 @@ class EtaChat(object):
     def do_end_eta_collection(self):
         _message_to_display = ''
         if self.eta_collection_on:
-            if len(self.eta_dict) > 1:
+            _wont_make_it = dict()
+            _will_make_it = dict()
+
+            for key, value in self.eta_dict.iteritems():
+                if value['text'] in WONT_MAKE_IT:
+                    _wont_make_it[key] = value
+                else:
+                    _will_make_it[key] = value
+
+            if len(_will_make_it) > 1:
                 _format_string = '*{}* ({})\n'
                 _message_to_display += self.funny_message_bucket.done_collecting_eta()[1] + '\n'
-                for key, value in self.eta_dict.iteritems():
-                    _message_to_display += _format_string.format(value[1] + ' ' + value[2], value[3])
-            elif len(self.eta_dict) == 1:
+                for key, value in _will_make_it.iteritems():
+                    _message_to_display += _format_string.format(value['first_name'] + ' ' + value['last_name'],
+                                                                 value['text'])
+            elif len(_will_make_it) == 1:
                 _message_to_display += self.funny_message_bucket.only_one_answered()[1] + '\n'
-                _message_to_display += '{}, they could still join later :)'.format(self.eta_dict.itervalues().next()[1])
+                _message_to_display += '*{}*, they could still join later :)'.format(_will_make_it
+                                                                                   .itervalues()
+                                                                                   .next()
+                                                                                   ['first_name'])
             else:
                 _message_to_display += self.funny_message_bucket.no_one_answered()[1]
 
+            if len(_wont_make_it) > 0:
+                _message_to_display += '\n\n{}:\n'.format(self.funny_message_bucket.wont_make_it_and_voted()[1])
+                for key, value in _wont_make_it.iteritems():
+                    _message_to_display += '*{} {}*\n'.format(value['first_name'], value['last_name'])
             self.updater.bot.send_message(chat_id=self.chat_id,
                                           text=_message_to_display,
                                           parse_mode='Markdown',
@@ -176,21 +193,21 @@ class EtaChat(object):
                                                self.funny_message_bucket.no_double_votes)
                 else:
                     # check if user is a rejected user
-                    if update.message.chat.username in self.reject_users:
+                    from_user = update.message.from_user
+                    if from_user.username != '' and from_user.username in self.reject_users:
                         _message_func = self.funny_message_bucket.you_can_not_vote
 
-                        if update.message.chat.username == 'tsnoam':
+                        print 'from_user: {}'.format(from_user)
+                        if from_user.username == 'tsnoam':
                             _message_func = self.funny_message_bucket.respect_previous_creators
                         self.send_funny_message(self.updater.bot,
-                                    update.message.chat.id,
-                                    self.funny_message_bucket.you_can_not_vote)
-                    # Sanity of input
-                    if update.message.text in WILL_JOIN_OPTIONS or update.message.text in WONT_MAKE_IT:
-                        from_user = update.message.from_user
-                        self.eta_dict[update.message.from_user.id] = [from_user.id,
-                                                                      from_user.first_name,
-                                                                      from_user.last_name,
-                                                                      update.message.text]
+                                                update.message.chat.id,
+                                                self.funny_message_bucket.you_can_not_vote)
+                    elif update.message.text in WILL_JOIN_OPTIONS or update.message.text in WONT_MAKE_IT:
+                        self.eta_dict[from_user.id] = {'id': from_user.id,
+                                                       'first_name': from_user.first_name,
+                                                       'last_name': from_user.last_name,
+                                                       'text': update.message.text}
                     else:
                         EtaChat.send_funny_message(self.updater.bot,
                                                    self.chat_id,

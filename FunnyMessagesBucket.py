@@ -90,8 +90,16 @@ class MessagesBucket(object):
 
         return self._chose_random_message(_messages_array)
 
+    def wont_make_it_and_voted(self):
+        _messages_array = [['text', 'The guys that bothered to inform that they are not coming'],
+                           ['text', 'Thank you for your useless input, please come again'],
+                           ['text', 'Expecting not to see their faces at breakfast']]
+
+        return self._chose_random_message(_messages_array)
+
     def you_can_not_vote(self):
         _messages_array = [['text', 'You don\'t have voting permission'],
+                           ['text', 'You don\'t work here anymore, you are finished, done, kaput!'],
                            ['text', 'Access denied!'],
                            ['text', 'Ignoring that...'],
                            ['text', 'Like you will join for breakfast...']]
