@@ -1,7 +1,7 @@
-
 import random
 import toml
 import argparse
+
 
 class MessagesBucket(object):
     def __init__(self, conf_file):
@@ -13,128 +13,33 @@ class MessagesBucket(object):
         _choice = _messages_array[random.randint(0, len(_messages_array) - 1)]
         return _choice[0], _choice[1]
 
-    def _take_message_from_toml(self, message_name):
+    def get_random_message(self, message_name):
         return self._chose_random_message(self.config['funny_messages'][message_name])
 
-    def welcome_master(self):
-        _messages_array = [['text', 'Welcome master']]
-
-        return self._chose_random_message(_messages_array)
-
-    def respect_previous_creators(self):
-        return self._take_message_from_toml('respect_previous_creators')
-
-        _messages_array = [['text', 'I usually tend to ignore or blow others away but my master told me to be polite '
-                                    'to you specifically Mr. Noam. So I will be polite and tell you that I have only '
-                                    'one master and that is not you :). You have a great day now! I will be ignoring '
-                                    'messages now.']]
-
-        return self._chose_random_message(_messages_array)
-
-    def you_are_not_my_master(self):
-        _messages_array = [['text', 'I don\'t like you so I\'m not going to talk to you!'],
-                           ['text', 'Dude, what are you doing?'],
-                           ['text', 'Leave me alone please'],
-                           ['text', 'I have only one master, and he does not share power!'],
-                           ['sticker', 'BQADBAADVwADc0euB0BYuyIGS-FVAg']]
-
-        return self._chose_random_message(_messages_array)
-
-    def not_collecting_eta(self):
-        _messages_array = [['text', 'Not collecting ETA currently'],
-                           ['text', 'Dude, did you just wake up or something, I\'m not collecting ETA anymore!'],
-                           ['text', 'Good to know, thank you for sharing, but I\'m not collecting ETA dude!'],
-                           ['text', 'Yeah, no'],
-                           ['text', 'Check your watch dude, not collecting ETA anymore!'],
-                           ['text', 'All lines are busy right now please hold the line and we will be with you tomorrow'
-                                    ' - maybe!'],
-                           ['text', 'Please direct your message to /dev/null and we will be with you shortly -- NOT :)'],
-                           ['text', 'Please don\'t call us, we\'ll call you!'],
-                           ['text', 'In which time zone are in exactly?'],
-                           ['sticker', 'BQADAQADOQADfwyFBGSByrhmyiflAg'],
-                           ['sticker', 'BQADBAADlQIAAhKL5QJmuApNJRp-5wI'],
-                           ['sticker', 'BQADAQADKQADFOc6AAG5o8d-L5rP1QI']]
-
-        return self._chose_random_message(_messages_array)
-
-    def bot_is_now_online(self):
-        _messages_array = [['text', 'Bot is now online'],
-                           ['text', 'OK I\'m here, now what?'],
-                           ['text', 'I\'m up I\'m up -- geez'],
-                           ['text', 'Isn\'t this great - I\'m alive again'],
-                           ['text', '(yawn) - morning!']]
-
-        return self._chose_random_message(_messages_array)
-
-    def ask_for_eta(self):
-        _messages_array = [['text', 'ETA?'],
-                           ['text', 'Hungry?'],
-                           ['text', 'Wakey wakey!'],
-                           ['text', 'Come on - start pressing the buttons:'],
-                           ['text', 'Yo yo yo - push d\'button:']]
-
-        return self._chose_random_message(_messages_array)
-
-    def done_collecting_eta(self):
-        _messages_array = [['text', 'Done for now, here is the status:'],
-                           ['text', 'Ladies and gents we have a final conclusion:'],
-                           ['text', 'OK thank god it\'s over! results:'],
-                           ['text', 'I\'m out of here:'],
-                           ['text', 'No more votes please:'],
-                           ['text', 'GONG:']]
-
-        return self._chose_random_message(_messages_array)
-
-    def only_one_answered(self):
-        _messages_array = [['text', 'That\'s not fun, only one participant:'],
-                           ['text', 'I\'m all alone there\'s no one here beside me:']]
-
-        return self._chose_random_message(_messages_array)
-
-    def no_one_answered(self):
-        _messages_array = [['text', 'Looks like it\'s too early, no one answered!'],
-                           ['text', 'Where is everyone?']]
-
-        return self._chose_random_message(_messages_array)
-
-    def you_can_not_vote(self):
-        _messages_array = [['text', 'You don\'t have voting permission'],
-                           ['text', 'Access denied!'],
-                           ['text', 'Ignoring that...'],
-                           ['text', 'Like you will join for breakfast...']]
-
-        return self._chose_random_message(_messages_array)
-
-    def no_double_votes(self):
-        _messages_array = [['text', 'You already voted!'],
-                           ['text', 'Changed your mind? it\'s your problem not mine!'],
-                           ['text', 'Stop pressing the buttons - I heard you the first time!'],
-                           ['text', 'Hay look, it\'s the double voter again!'],
-                           ['text', 'Let\'s hear it for Mr. double vote!'],
-                           ['text', 'Your double vote has been ignored successfully!'],
-                           ['text', 'I\'m running out of funny messages, please stop!'],
-                           ['sticker', 'BQADBAADGwADmBZLBgG6GBWnKoqGAg']]
-
-        return self._chose_random_message(_messages_array)
-
-    def invalid_eta_input(self):
-        _messages_array = [['text', 'You would think if you create a keyboard with buttons, people would simply '
-                                    'use it but no they are smarter, well you know what, your not!'],
-                           ['text', 'Try the custom keyboard will ya!'],
-                           ['text', 'Segmentation Fault!'],
-                           ['text', 'I created a custom keyboard so you won\'t make a mistake - and you still made '
-                                    'a mistake!']]
-
-        return self._chose_random_message(_messages_array)
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--conf",
                         help="toml Configuration file")
     args = parser.parse_args()
-    funnyMessages = MessagesBucket(args.conf)
+    funny_messages = MessagesBucket(args.conf)
 
-    print funnyMessages.respect_previous_creators()
+    _test_array = ['respect_previous_creators',
+                   'you_are_not_my_master',
+                   'not_collecting_eta',
+                   'bot_is_now_online',
+                   'ask_for_eta',
+                   'done_collecting_eta',
+                   'only_one_answered',
+                   'no_one_answered',
+                   'wont_make_it_and_voted',
+                   'you_can_not_vote',
+                   'no_double_votes',
+                   'invalid_eta_input']
+
+    for _message_name in _test_array:
+        print '{}: {}'.format(_message_name, funny_messages.get_random_message(_message_name))
+
 
 if __name__ == '__main__':
     main()
