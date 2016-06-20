@@ -6,7 +6,7 @@ import argparse
 class MessagesBucket(object):
     def __init__(self, conf_file):
         with open(conf_file) as config_file_handle:
-            self.config = toml.loads(config_file_handle.read())
+            self.toml_messages = toml.loads(config_file_handle.read())
 
     @staticmethod
     def _chose_random_message(_messages_array):
@@ -14,7 +14,10 @@ class MessagesBucket(object):
         return _choice[0], _choice[1]
 
     def get_random_message(self, message_name):
-        return self._chose_random_message(self.config['funny_messages'][message_name])
+        if message_name in self.toml_messages['funny_messages']:
+            return self._chose_random_message(self.toml_messages['funny_messages'][message_name])
+        else:
+            return 'error', "funny message: '{}' does not exist in toml".format(message_name)
 
 
 def main():
@@ -35,7 +38,8 @@ def main():
                    'wont_make_it_and_voted',
                    'you_can_not_vote',
                    'no_double_votes',
-                   'invalid_eta_input']
+                   'invalid_eta_input',
+                   'time_for_breakfast']
 
     for _message_name in _test_array:
         print '{}: {}'.format(_message_name, funny_messages.get_random_message(_message_name))

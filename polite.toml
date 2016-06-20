@@ -1,0 +1,80 @@
+[funny_messages]
+  respect_previous_creators = [
+    ["text", "I usually tend to ignore or blow others away but my master told me to be polite to you specifically Mr. Noam. So I will be polite and tell you that I have only one master and that is not you :). You have a great day now! I will be ignoring messages now."]
+  ]
+  
+  you_are_not_my_master = [
+    ["text", "Sorry, only admin can do that"],
+    ["text", "You need to be an admin, sorry"],
+    ["text", "I would like to help, but my master programed me to ignore non master users, sorry."]
+  ]
+  
+  not_collecting_eta = [
+    ["text", "Not collecting ETA currently"],
+    ["text", "I'm currently not collecting votes, sorry."]
+  ]
+  
+  bot_is_now_online = [
+    ["text", "Bot is now online"],
+    ["text", "OK I'm here, now what?"],
+    ["text", "I'm up I'm up -- geez"],
+    ["text", "Isn't this great - I'm alive again"],
+    ["text", "(yawn) - morning!"]
+  ]
+  
+  ask_for_eta = [
+    ["text", "ETA?"],
+    ["text", "Hungry?"],
+    ["text", "Wakey wakey!"],
+    ["text", "Come on - start pressing the buttons:"],
+    ["text", "Yo yo yo - push d'button:"]
+  ]
+  
+  done_collecting_eta = [
+    ["text", "Done for now, here is the status:"],
+    ["text", "Ladies and gents we have a final conclusion:"],
+    ["text", "OK thank god it's over! results:"],
+    ["text", "I'm out of here:"],
+    ["text", "No more votes please:"],
+    ["text", "GONG:"]
+  ]
+  
+  only_one_answered = [
+    ["text", "That's not fun, only one participant:"],
+    ["text", "I'm all alone there's no one here beside me:"]
+  ]
+  
+  no_one_answered = [
+    ["text", "Looks like it's too early, no one answered!"],
+    ["text", "Where is everyone?"]
+  ]
+  
+  wont_make_it_and_voted = [
+    ["text", "The guys that bothered to inform that they are not coming"],
+    ["text", "The guys who won't make it"]
+  ]
+  
+  you_can_not_vote = [
+    ["text", "Thank you for voting, but I will not collect it. See.. I was told that you don't work here anymore"],
+    ["text", "Thank you, but ... uhh.. I can't take your vote :("]
+  ]
+  
+  no_double_votes = [
+    ["text", "Thank you, but there is no need for another vote."],
+    ["text", "Oh, I sure hope you didn't make a mistake and you changed your mind, this feature is not supported"],
+    ["text", "Your vote has been collected the first time, thank you."],
+    ["text", "Rest assure your vote was collected the first time, no need for a second vote"]
+  ]
+  
+  invalid_eta_input = [
+    ["text", "I'm not sure I follow, can you please try the keyboard?"],
+    ["text", "Can't really make out what you chose, can you please try the keyboard?"],
+    ["text", "Please use the keyboard, I will understand you much better"]
+  ]
+
+  time_for_breakfast = [
+    ["text", "It's time for breakfast, TO THE KITCHEN!"],
+    ["text", "We have a GO, hit the kitchen guys!"],
+    ["text", "Gents - it is time! let the feast begin!"],
+    ["sticker", "BQADBAADRwADudGqAVaHAWytTQPEAg"]
+  ]

@@ -90,3 +90,10 @@
     ["text", "Segmentation Fault!"],
     ["text", "I created a custom keyboard so you won't make a mistake - and you still made a mistake!"]
   ]
+
+  time_for_breakfast = [
+    ["text", "Hit it boys! let's shred some vegi!"],
+    ["text", "Get your fast asses off the chairs and to the kitchen, it's time!"],
+    ["text", "Dudes, hit it, it's breakfast time - to the kitchen!"],
+    ["sticker", "BQADBAADRwADudGqAVaHAWytTQPEAg"]
+  ]

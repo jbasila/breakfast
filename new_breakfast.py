@@ -87,6 +87,9 @@ class EtaChat(object):
         elif message_type == 'sticker':
             bot.send_sticker(chat_id,
                              message_content)
+        elif message_type == 'error':
+            bot.send_message(self.admin_chat_id,
+                             text=message_content)
 
     def do_begin_eta_collection(self):
         if not self.eta_collection_on:
@@ -118,8 +121,24 @@ class EtaChat(object):
                     _message_to_display += _format_string.format(value['first_name'] + ' ' + value['last_name'],
                                                                  value['text'])
 
-                _message_to_display += '\n*Recommended Breakfast time: {}*\n\n'\
-                    .format(EtaChat._time_int_to_string(_recommended_time_for_breakfast / len(_will_make_it)))
+                # Let's check if the recommended time is before now, and if so say now :)
+                _recommended_time_string = 'NOW!'
+                _recommended_time_for_breakfast /= len(_will_make_it)
+                if _recommended_time_for_breakfast > self._endTimeInt:
+                    _recommended_time_string = self._time_int_to_string(_recommended_time_for_breakfast)
+
+                    # Set a reminder for breakfast
+                    def breakfast_alarm(bot):
+                        self.send_funny_message(bot=bot,
+                                                chat_id=self.chat_id,
+                                                funny_message='time_for_breakfast')
+
+                    _set_timer_for = (_recommended_time_for_breakfast - self._endTimeInt) * 60
+                    self.updater.job_queue.put(breakfast_alarm,
+                                               _set_timer_for,
+                                               repeat=False)
+
+                _message_to_display += '\n*Recommended Breakfast time: {}*'.format(_recommended_time_string)
             elif len(_will_make_it) == 1:
                 _message_to_display += self.funny_message_bucket.get_random_message('only_one_answered')[1] + '\n'
                 _message_to_display += '*{}*, they could still join later :)'.format(_will_make_it
@@ -216,7 +235,6 @@ class EtaChat(object):
                     if from_user.username != '' and from_user.username in self.reject_users:
                         _funny_message = 'you_can_not_vote'
 
-                        print 'from_user: {}'.format(from_user)
                         if from_user.username == 'tsnoam':
                             _funny_message = 'respect_previous_creators'
                         self.send_funny_message(self.updater.bot,
