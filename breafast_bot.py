@@ -233,13 +233,9 @@ class EtaChat(object):
                     # check if user is a rejected user
                     from_user = update.message.from_user
                     if from_user.username != '' and from_user.username in self.reject_users:
-                        _funny_message = 'you_can_not_vote'
-
-                        if from_user.username == 'tsnoam':
-                            _funny_message = 'respect_previous_creators'
                         self.send_funny_message(self.updater.bot,
                                                 update.message.chat.id,
-                                                _funny_message)
+                                                'you_can_not_vote')
                     elif update.message.text in WILL_JOIN_OPTIONS or update.message.text in WONT_MAKE_IT:
                         self.eta_dict[from_user.id] = {'id': from_user.id,
                                                        'first_name': from_user.first_name,
