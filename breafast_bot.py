@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from telegram import ReplyKeyboardMarkup, ReplyKeyboardHide
+from telegram import ReplyKeyboardMarkup, ReplyKeyboardHide, TelegramError
 from telegram.ext import Updater, MessageHandler, Filters, CommandHandler
 import argparse
 from configparser import ConfigParser
@@ -68,6 +68,29 @@ class EtaChat(object):
         self.updater.dispatcher.add_handler(MessageHandler([Filters.sticker, Filters.photo], self.sticker_received))
 
     @staticmethod
+    def _send_message(bot,
+                      chat_id,
+                      message_content):
+        try:
+            bot.send_message(chat_id,
+                             text=message_content,
+                             parse_mode='Markdown')
+        except TelegramError:
+            # should do a log here
+            pass
+
+    @staticmethod
+    def _send_sticker(bot,
+                      chat_id,
+                      sticker_id):
+        try:
+            bot.send_sticker(chat_id,
+                             sticker_id)
+        except TelegramError:
+            # Log should go here
+            pass
+
+    @staticmethod
     def _time_string_to_int(_time_string):
         _split_time = _time_string.split(':')
         return int(_split_time[0]) * 60 + int(_split_time[1])
@@ -82,20 +105,27 @@ class EtaChat(object):
     def send_funny_message(self, bot, chat_id, funny_message):
         message_type, message_content = self.funny_message_bucket.get_random_message(funny_message)
         if message_type == 'text':
-            bot.send_message(chat_id,
-                             text=message_content)
+            self._send_message(bot,
+                               chat_id,
+                               message_content)
         elif message_type == 'sticker':
-            bot.send_sticker(chat_id,
-                             message_content)
+            self._send_sticker(bot,
+                               chat_id,
+                               message_content)
         elif message_type == 'error':
-            bot.send_message(self.admin_chat_id,
-                             text=message_content)
+            self._send_message(bot,
+                               self.admin_chat_id,
+                               message_content)
 
     def do_begin_eta_collection(self):
         if not self.eta_collection_on:
-            self.updater.bot.send_message(self.chat_id,
-                                          text=self.funny_message_bucket.get_random_message('ask_for_eta')[1],
-                                          reply_markup=self.reply_markup)
+            try:
+                self.updater.bot.send_message(self.chat_id,
+                                              text=self.funny_message_bucket.get_random_message('ask_for_eta')[1],
+                                              reply_markup=self.reply_markup)
+            except TelegramError:
+                pass
+
         self.eta_collection_on = True
 
     def do_end_eta_collection(self):
@@ -142,9 +172,9 @@ class EtaChat(object):
             elif len(_will_make_it) == 1:
                 _message_to_display += self.funny_message_bucket.get_random_message('only_one_answered')[1] + '\n'
                 _message_to_display += '*{}*, they could still join later :)'.format(_will_make_it
-                                                                                   .itervalues()
-                                                                                   .next()
-                                                                                   ['first_name'])
+                                                                                     .itervalues()
+                                                                                     .next()
+                                                                                     ['first_name'])
             else:
                 _message_to_display += self.funny_message_bucket.get_random_message('no_one_answered')[1]
 
@@ -152,10 +182,13 @@ class EtaChat(object):
                 _message_to_display += '\n\n{}:\n'.format(self.funny_message_bucket.get_random_message('wont_make_it_and_voted')[1])
                 for key, value in _wont_make_it.iteritems():
                     _message_to_display += '*{} {}*\n'.format(value['first_name'], value['last_name'])
-            self.updater.bot.send_message(chat_id=self.chat_id,
-                                          text=_message_to_display,
-                                          parse_mode='Markdown',
-                                          reply_markup=ReplyKeyboardHide())
+            try:
+                self.updater.bot.send_message(chat_id=self.chat_id,
+                                              text=_message_to_display,
+                                              parse_mode='Markdown',
+                                              reply_markup=ReplyKeyboardHide())
+            except TelegramError:
+                pass
 
         self.eta_collection_on = False
         self.eta_dict.clear()
@@ -167,21 +200,16 @@ class EtaChat(object):
                             '*/end* - _End ETA collection and display results_\n' \
                             '*/send <message>* - _Send a message to group_'
 
-            self.updater.bot.send_message(chat_id=update.message.chat.id,
-                                          text=_help_message,
-                                          parse_mode='Markdown')
+            try:
+                self.updater.bot.send_message(chat_id=update.message.chat.id,
+                                              text=_help_message,
+                                              parse_mode='Markdown')
+            except TelegramError:
+                pass
         else:
-            if update.message.chat.username == 'tsnoam':
-                _funny_message = 'respect_previous_creators'
-                self.send_funny_message(self.updater.bot,
-                                        update.message.chat.id,
-                                        _funny_message)
-            else:
-                _funny_message = 'you_are_not_my_master'
-                self.send_funny_message(self.updater.bot,
-                                        update.message.chat.id,
-                                        _funny_message)
-
+            self.send_funny_message(self.updater.bot,
+                                    update.message.chat.id,
+                                    'you_are_not_my_master')
 
     def command_start(self, bot, update):
         _funny_message = None
@@ -194,12 +222,15 @@ class EtaChat(object):
             else:
                 _funny_message = 'you_are_not_my_master'
 
-            self.updater.bot.send_message(chat_id=self.admin_chat_id,
-                                          text='Username ({} {} - @{}, chat_id = {}), '
-                                               'tried to contact me'.format(update.message.chat.first_name,
-                                                                            update.message.chat.last_name,
-                                                                            update.message.chat.username,
-                                                                            update.message.chat_id))
+            try:
+                self.updater.bot.send_message(chat_id=self.admin_chat_id,
+                                              text='Username ({} {} - @{}, chat_id = {}), '
+                                                   'tried to contact me'.format(update.message.chat.first_name,
+                                                                                update.message.chat.last_name,
+                                                                                update.message.chat.username,
+                                                                                update.message.chat_id))
+            except TelegramError:
+                pass
 
         if _funny_message is not None:
             self.send_funny_message(self.updater.bot,
@@ -215,8 +246,9 @@ class EtaChat(object):
 
     def command_send(self, bot, update):
         if update.message.chat.id == self.admin_chat_id:
-            self.updater.bot.send_message(self.chat_id,
-                                          text=update.message.text[5:])
+            self._send_message(bot,
+                               self.chat_id,
+                               update.message.text[5:])
 
     def command_end(self, bot, update):
         if update.message.chat.id == self.admin_chat_id:
@@ -253,8 +285,9 @@ class EtaChat(object):
     def sticker_received(self, bot, update):
         if update.message.chat.id == self.admin_chat_id:
             _message_to_send = 'got a sticker: {}'.format(update.message.sticker.file_id)
-            self.updater.bot.send_message(self.admin_chat_id,
-                                          text=_message_to_send)
+            self._send_message(bot,
+                               self.admin_chat_id,
+                               _message_to_send)
 
     def run(self):
         def beep(bot):
