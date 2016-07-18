@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardHide, TelegramError
-from telegram.ext import Updater, MessageHandler, Filters, CommandHandler
+from telegram.ext import Updater, MessageHandler, Filters, CommandHandler, Job
 import argparse
 from configparser import ConfigParser
 from datetime import datetime
@@ -290,7 +290,7 @@ class EtaChat(object):
                                _message_to_send)
 
     def run(self):
-        def beep(bot):
+        def beep(bot, job):
             _now = datetime.now()
             _nowTimeInt = int(_now.hour) * 60 + int(_now.minute)
 
@@ -311,7 +311,8 @@ class EtaChat(object):
                 else:
                     pass
 
-        self.updater.job_queue.put(beep, 1, repeat=True)
+        job = Job(beep, 1, repeat=True, context=None)
+        self.updater.job_queue.put(job)
         # Start the Bot
         self.updater.start_polling()
 
